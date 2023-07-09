@@ -252,6 +252,7 @@ abstract class RoboFileAbstract extends Tasks
         $authJsonContent[$type][$host] = match ($type) {
             'http-basic'      => $this->getHttpBasicAuthBlock($host, $helpText),
             'bitbucket-oauth' => $this->getBitbucketOauthBlock($host, $helpText),
+            'github-oauth'    => $this->getGithubOauthBlock($host, $helpText),
             default           => throw new Exception('Unsupported auth type: ' . $type),
         };
 
@@ -306,5 +307,25 @@ abstract class RoboFileAbstract extends Tasks
             'consumer-key'    => $key,
             'consumer-secret' => $secret,
         ];
+    }
+
+    private function getGithubOauthBlock(string $host, string $helpText = ''): string
+    {
+        $this->say(
+            'No authentication information for ' . $host
+            . '. Authentication needs to be set up via github personal access tokens. If you have not done so previously, create a'
+            . ' personal access token at https://' . $host . '/settings/tokens/new .'
+            . ' Ensure the token has the `repo` permission. Then enter your token below.'
+            . ' The entered information is not checked now, but only during composer install. If you made'
+            . ' a mistake edit the auth.json file manually.',
+        );
+
+        if (!empty($helpText)) {
+            $this->io()->block($helpText);
+        }
+
+        $token  = $this->ask('Please enter your personal access token');
+
+        return $token;
     }
 }
