@@ -202,7 +202,8 @@ abstract class RoboFileAbstract extends Tasks
      *
      * @return array<string,string>
      */
-    protected function loadEnvFile(string $envPath): array {
+    protected function loadEnvFile(string $envPath): array
+    {
         return (new Loader([$envPath]))->parse()->toArray();
     }
 
