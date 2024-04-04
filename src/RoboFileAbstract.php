@@ -157,18 +157,26 @@ abstract class RoboFileAbstract extends Tasks
 
     /**
      * Updates the .env file from the .env.example file.
+     *
+     * @param string[] $updatedEnvironments
      */
-    protected function updateEnvFile(bool $doUpdate = false): void
-    {
+    protected function updateEnvFile(
+        bool $doUpdate = false,
+        string $environmentKeyName = 'ENVIRONMENT_NAME',
+        array $updatedEnvironments = ['dev', 'development'],
+        bool $includeEmptyValues = false,
+    ): void {
         $envPath     = $this->getEnvFilePath();
         $examplePath = $this->getEnvExamplePath();
-        $env         = (new Loader([$envPath]))->parse()->toArray();
-        $example     = (new Loader([$examplePath]))->parse()->toArray();
+        $env         = $this->loadEnvFile($envPath);
+        $example     = $this->loadEnvFile($examplePath);
         $additions   = [];
 
         foreach ($example as $key => $value) {
             if (!empty($value) && empty($env[$key])) {
                 $additions[$key] = $value;
+            } elseif (empty($value) && $includeEmptyValues && !array_key_exists($key, $env)) {
+                $additions[$key] = '';
             }
         }
 
@@ -180,13 +188,22 @@ abstract class RoboFileAbstract extends Tasks
                 $content .= "\n$key=$value\n";
             }
 
-            if ($doUpdate && 'dev' === ($env['ENVIRONMENT_NAME'] ?? null)) {
+            if ($doUpdate && in_array($env[$environmentKeyName] ?? null, $updatedEnvironments, true)) {
                 file_put_contents($envPath, $content);
             } else {
                 $this->say('Your .env file is outdated, please update it with the following content:');
                 $this->io()->block($content);
             }
         }
+    }
+
+    /**
+     * Loads the .env file and returns its content as an array
+     *
+     * @return array<string,string>
+     */
+    protected function loadEnvFile(string $envPath): array {
+        return (new Loader([$envPath]))->parse()->toArray();
     }
 
     /**
