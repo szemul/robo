@@ -229,7 +229,7 @@ abstract class RoboFileAbstract extends Tasks
      */
     protected function isRequiredPhpVersion(): bool
     {
-        return PHP_MAJOR_VERSION > 7;
+        return PHP_MAJOR_VERSION > 7; // @phpstan-ignore-line
     }
 
     /**
